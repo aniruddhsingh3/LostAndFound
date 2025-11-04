@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="hi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browse Items - College Lost & Found</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/browse.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">Lost & Found</a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">Home</a>
+          </li>
+          <li class="nav-item">
+            <a href="browse.html" class="nav-link">Browse</a>
+          </li>
+          <li class="nav-item">
+            <a href="report.html" class="nav-link">Report</a>
+          </li>
+          <li class="nav-item">
+            <a href="login.html" class="nav-link">Login</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <section class="browse-container">
+      <h2>Browse Lost & Found Items</h2>
+
+      <div class="search-filter">
+        <input type="text" placeholder="Search items..." />
+        <select>
+          <option>All Categories</option>
+          <option>Electronics</option>
+          <option>Books</option>
+          <option>ID Cards</option>
+          <option>Bags</option>
+          <option>Others</option>
+        </select>
+        <button class="btn">Search</button>
+      </div>
+
+      <div class="items-grid">
+        <!-- Items will be loaded dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <script>
+      async function loadItems() {
+        try {
+          const response = await fetch("http://localhost:5000/api/items");
+          const items = await response.json();
+
+          const itemsGrid = document.querySelector(".items-grid");
+          itemsGrid.innerHTML = "";
+
+          if (items.length === 0) {
+            itemsGrid.innerHTML =
+              '<p class="no-items">No items found. Be the first to report an item!</p>';
+            return;
+          }
+
+          items.forEach((item) => {
+            const itemCard = `
+                    <div class="item-card ${item.claimed ? "claimed" : ""}">
+                        <div class="item-image">
+                            <img src="images/${getItemImage(
+                              item.category
+                            )}" alt="${item.itemName}" 
+                                 onerror="this.src='images/placeholder.jpg'">
+                        </div>
+                        <div class="item-details">
+                            <h3>${item.itemName}</h3>
+                            <p>${item.description}</p>
+                            <p><strong>Location:</strong> ${item.location}</p>
+                            <p><strong>Category:</strong> ${item.category}</p>
+                            <p><strong>Type:</strong> ${item.itemType}</p>
+                            <p><strong>Date:</strong> ${new Date(
+                              item.date
+                            ).toLocaleDateString()}</p>
+                            <button class="btn" onclick="claimItem(${
+                              item.id
+                            })" ${item.claimed ? "disabled" : ""}>
+                                ${item.claimed ? "Claimed ✓" : "Claim Item"}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            itemsGrid.innerHTML += itemCard;
+          });
+        } catch (error) {
+          console.error("Error loading items:", error);
+          document.querySelector(".items-grid").innerHTML =
+            '<p class="error">Error loading items. Please try again later.</p>';
+        }
+      }
+
+      function getItemImage(category) {
+        const imageMap = {
+          Electronics: "earphones.jpg",
+          Books: "calculus-book.jpg",
+          "ID Cards": "id-card.jpg",
+          Bags: "placeholder.jpg",
+          Clothing: "placeholder.jpg",
+          Others: "water-bottle.jpg",
+        };
+        return imageMap[category] || "placeholder.jpg";
+      }
+
+      async function claimItem(itemId) {
+        if (!confirm("Are you sure you want to claim this item?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `http://localhost:5000/api/items/claim/${itemId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const result = await response.json();
+
+          if (response.ok) {
+            alert("Item claimed successfully!");
+            loadItems(); // Refresh the items list
+          } else {
+            alert("Error: " + result.message);
+          }
+        } catch (error) {
+          alert("Network error. Please try again.");
+        }
+      }
+
+      // Load items when page loads
+      document.addEventListener("DOMContentLoaded", loadItems);
+    </script>
+  </body>
+</html>

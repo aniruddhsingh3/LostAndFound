@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="hi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report Item - College Lost & Found</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/report.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" class="nav-logo">Lost & Found</a>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">Home</a>
+          </li>
+          <li class="nav-item">
+            <a href="browse.html" class="nav-link">Browse</a>
+          </li>
+          <li class="nav-item">
+            <a href="report.html" class="nav-link">Report</a>
+          </li>
+          <li class="nav-item">
+            <a href="login.html" class="nav-link">Login</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <section class="report-container">
+      <h2>Report Lost or Found Item</h2>
+
+      <div class="report-form">
+        <form id="reportForm">
+          <div class="form-group">
+            <label>Item Type</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="item-type" value="lost" checked />
+                Lost Item
+              </label>
+              <label>
+                <input type="radio" name="item-type" value="found" />
+                Found Item
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="item-name">Item Name</label>
+            <input type="text" id="item-name" name="item-name" required />
+          </div>
+
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" required>
+              <option value="">Select Category</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Books">Books</option>
+              <option value="ID Cards">ID Cards</option>
+              <option value="Bags">Bags</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="4"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" required />
+          </div>
+
+          <div class="form-group">
+            <label for="contact">Contact Information</label>
+            <input type="text" id="contact" name="contact" required />
+          </div>
+
+          <button type="submit" class="btn submit-btn">Submit Report</button>
+        </form>
+      </div>
+    </section>
+
+    <script>
+      document
+        .getElementById("reportForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const formData = {
+            itemName: document.getElementById("item-name").value,
+            description: document.getElementById("description").value,
+            category: document.getElementById("category").value,
+            location: document.getElementById("location").value,
+            itemType: document.querySelector('input[name="item-type"]:checked')
+              .value,
+            contact: document.getElementById("contact").value,
+          };
+
+          try {
+            const response = await fetch("http://localhost:5000/api/items", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              alert("Item reported successfully!");
+              window.location.href = "browse.html";
+            } else {
+              alert("Error: " + result.message);
+            }
+          } catch (error) {
+            alert("Network error. Please try again.");
+          }
+        });
+    </script>
+  </body>
+</html>
